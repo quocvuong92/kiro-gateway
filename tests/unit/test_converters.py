@@ -17,7 +17,8 @@ from kiro_gateway.converters import (
     process_tools_with_long_descriptions,
     _extract_tool_results,
     _extract_tool_uses,
-    _build_user_input_context
+    _build_user_input_context,
+    _sanitize_json_schema
 )
 from kiro_gateway.models import ChatMessage, ChatCompletionRequest, Tool, ToolFunction
 
@@ -981,6 +982,253 @@ class TestProcessToolsWithLongDescriptions:
         assert doc == ""
 
 
+class TestSanitizeJsonSchema:
+    """
+    Тесты функции _sanitize_json_schema.
+    
+    Эта функция очищает JSON Schema от полей, которые Kiro API не принимает:
+    - Пустые required массивы []
+    - additionalProperties
+    """
+    
+    def test_returns_empty_dict_for_none(self):
+        """
+        Что он делает: Проверяет обработку None.
+        Цель: Убедиться, что None возвращает пустой словарь.
+        """
+        print("Настройка: None schema...")
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(None)
+        
+        print(f"Сравниваем результат: Ожидалось {{}}, Получено {result}")
+        assert result == {}
+    
+    def test_returns_empty_dict_for_empty_dict(self):
+        """
+        Что он делает: Проверяет обработку пустого словаря.
+        Цель: Убедиться, что пустой словарь возвращается как есть.
+        """
+        print("Настройка: Пустой словарь...")
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema({})
+        
+        print(f"Сравниваем результат: Ожидалось {{}}, Получено {result}")
+        assert result == {}
+    
+    def test_removes_empty_required_array(self):
+        """
+        Что он делает: Проверяет удаление пустого required массива.
+        Цель: Убедиться, что required: [] удаляется из schema.
+        
+        Это критический тест для бага Cline, где tools с required: []
+        вызывали ошибку 400 "Improperly formed request" от Kiro API.
+        """
+        print("Настройка: Schema с пустым required...")
+        schema = {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что required удалён...")
+        assert "required" not in result
+        assert result["type"] == "object"
+        assert result["properties"] == {}
+    
+    def test_preserves_non_empty_required_array(self):
+        """
+        Что он делает: Проверяет сохранение непустого required массива.
+        Цель: Убедиться, что required с элементами сохраняется.
+        """
+        print("Настройка: Schema с непустым required...")
+        schema = {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string"}
+            },
+            "required": ["location"]
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что required сохранён...")
+        assert "required" in result
+        assert result["required"] == ["location"]
+    
+    def test_removes_additional_properties(self):
+        """
+        Что он делает: Проверяет удаление additionalProperties.
+        Цель: Убедиться, что additionalProperties удаляется из schema.
+        
+        Kiro API не поддерживает additionalProperties в JSON Schema.
+        """
+        print("Настройка: Schema с additionalProperties...")
+        schema = {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что additionalProperties удалён...")
+        assert "additionalProperties" not in result
+        assert result["type"] == "object"
+    
+    def test_removes_both_empty_required_and_additional_properties(self):
+        """
+        Что он делает: Проверяет удаление обоих проблемных полей.
+        Цель: Убедиться, что оба поля удаляются одновременно.
+        
+        Это реальный сценарий от Cline, где tools имели оба поля.
+        """
+        print("Настройка: Schema с обоими проблемными полями...")
+        schema = {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что оба поля удалены...")
+        assert "required" not in result
+        assert "additionalProperties" not in result
+        assert result == {"type": "object", "properties": {}}
+    
+    def test_recursively_sanitizes_nested_properties(self):
+        """
+        Что он делает: Проверяет рекурсивную очистку вложенных properties.
+        Цель: Убедиться, что вложенные schema также очищаются.
+        """
+        print("Настройка: Schema с вложенными properties...")
+        schema = {
+            "type": "object",
+            "properties": {
+                "nested": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False
+                }
+            }
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем вложенный объект...")
+        nested = result["properties"]["nested"]
+        assert "required" not in nested
+        assert "additionalProperties" not in nested
+    
+    def test_recursively_sanitizes_dict_values(self):
+        """
+        Что он делает: Проверяет рекурсивную очистку dict значений.
+        Цель: Убедиться, что любые вложенные dict очищаются.
+        """
+        print("Настройка: Schema с вложенным dict...")
+        schema = {
+            "type": "object",
+            "items": {
+                "type": "string",
+                "additionalProperties": True
+            }
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем вложенный items...")
+        assert "additionalProperties" not in result["items"]
+        assert result["items"]["type"] == "string"
+    
+    def test_sanitizes_items_in_lists(self):
+        """
+        Что он делает: Проверяет очистку элементов в списках (anyOf, oneOf).
+        Цель: Убедиться, что элементы списков также очищаются.
+        """
+        print("Настройка: Schema с anyOf...")
+        schema = {
+            "anyOf": [
+                {"type": "string", "additionalProperties": False},
+                {"type": "number", "required": []}
+            ]
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем элементы anyOf...")
+        assert "additionalProperties" not in result["anyOf"][0]
+        assert "required" not in result["anyOf"][1]
+    
+    def test_preserves_non_dict_list_items(self):
+        """
+        Что он делает: Проверяет сохранение не-dict элементов в списках.
+        Цель: Убедиться, что строки и другие типы в списках сохраняются.
+        """
+        print("Настройка: Schema с enum...")
+        schema = {
+            "type": "string",
+            "enum": ["value1", "value2", "value3"]
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем enum сохранён...")
+        assert result["enum"] == ["value1", "value2", "value3"]
+    
+    def test_complex_real_world_schema(self):
+        """
+        Что он делает: Проверяет очистку реальной сложной schema от Cline.
+        Цель: Убедиться, что реальные schema обрабатываются корректно.
+        """
+        print("Настройка: Реальная schema от Cline...")
+        schema = {
+            "type": "object",
+            "properties": {
+                "question": {
+                    "type": "string",
+                    "description": "The question to ask"
+                },
+                "options": {
+                    "type": "string",
+                    "description": "Array of options"
+                }
+            },
+            "required": ["question", "options"],
+            "additionalProperties": False
+        }
+        
+        print("Действие: Очистка schema...")
+        result = _sanitize_json_schema(schema)
+        
+        print(f"Результат: {result}")
+        print("Проверяем результат...")
+        assert "additionalProperties" not in result
+        assert result["required"] == ["question", "options"]  # Непустой required сохраняется
+        assert result["properties"]["question"]["type"] == "string"
+
+
 class TestBuildUserInputContext:
     """Тесты функции _build_user_input_context."""
     
@@ -1029,6 +1277,206 @@ class TestBuildUserInputContext:
         
         print(f"Сравниваем результат: Ожидалось {{}}, Получено {result}")
         assert result == {}
+    
+    def test_empty_description_replaced_with_placeholder(self):
+        """
+        Что он делает: Проверяет замену пустого description на placeholder.
+        Цель: Убедиться, что пустой description заменяется на "Tool: {name}".
+        
+        Это критический тест для бага Cline, где tool focus_chain имел
+        пустой description "", что вызывало ошибку 400 от Kiro API.
+        """
+        print("Настройка: Tool с пустым description...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4",
+            messages=[ChatMessage(role="user", content="Hello")],
+            tools=[Tool(
+                type="function",
+                function=ToolFunction(
+                    name="focus_chain",
+                    description="",
+                    parameters={"type": "object", "properties": {}}
+                )
+            )]
+        )
+        current_msg = ChatMessage(role="user", content="Hello")
+        
+        print("Действие: Построение контекста...")
+        result = _build_user_input_context(request, current_msg)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что description заменён на placeholder...")
+        tool_spec = result["tools"][0]["toolSpecification"]
+        assert tool_spec["description"] == "Tool: focus_chain"
+    
+    def test_whitespace_only_description_replaced_with_placeholder(self):
+        """
+        Что он делает: Проверяет замену description из пробелов на placeholder.
+        Цель: Убедиться, что description с только пробелами заменяется.
+        """
+        print("Настройка: Tool с description из пробелов...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4",
+            messages=[ChatMessage(role="user", content="Hello")],
+            tools=[Tool(
+                type="function",
+                function=ToolFunction(
+                    name="whitespace_tool",
+                    description="   ",
+                    parameters={}
+                )
+            )]
+        )
+        current_msg = ChatMessage(role="user", content="Hello")
+        
+        print("Действие: Построение контекста...")
+        result = _build_user_input_context(request, current_msg)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что description заменён на placeholder...")
+        tool_spec = result["tools"][0]["toolSpecification"]
+        assert tool_spec["description"] == "Tool: whitespace_tool"
+    
+    def test_none_description_replaced_with_placeholder(self):
+        """
+        Что он делает: Проверяет замену None description на placeholder.
+        Цель: Убедиться, что None description заменяется на "Tool: {name}".
+        """
+        print("Настройка: Tool с None description...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4",
+            messages=[ChatMessage(role="user", content="Hello")],
+            tools=[Tool(
+                type="function",
+                function=ToolFunction(
+                    name="none_desc_tool",
+                    description=None,
+                    parameters={}
+                )
+            )]
+        )
+        current_msg = ChatMessage(role="user", content="Hello")
+        
+        print("Действие: Построение контекста...")
+        result = _build_user_input_context(request, current_msg)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что description заменён на placeholder...")
+        tool_spec = result["tools"][0]["toolSpecification"]
+        assert tool_spec["description"] == "Tool: none_desc_tool"
+    
+    def test_non_empty_description_preserved(self):
+        """
+        Что он делает: Проверяет сохранение непустого description.
+        Цель: Убедиться, что нормальный description не изменяется.
+        """
+        print("Настройка: Tool с нормальным description...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4",
+            messages=[ChatMessage(role="user", content="Hello")],
+            tools=[Tool(
+                type="function",
+                function=ToolFunction(
+                    name="get_weather",
+                    description="Get weather for a location",
+                    parameters={}
+                )
+            )]
+        )
+        current_msg = ChatMessage(role="user", content="Hello")
+        
+        print("Действие: Построение контекста...")
+        result = _build_user_input_context(request, current_msg)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что description сохранён...")
+        tool_spec = result["tools"][0]["toolSpecification"]
+        assert tool_spec["description"] == "Get weather for a location"
+    
+    def test_sanitizes_tool_parameters(self):
+        """
+        Что он делает: Проверяет очистку parameters от проблемных полей.
+        Цель: Убедиться, что _sanitize_json_schema применяется к parameters.
+        """
+        print("Настройка: Tool с проблемными parameters...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4",
+            messages=[ChatMessage(role="user", content="Hello")],
+            tools=[Tool(
+                type="function",
+                function=ToolFunction(
+                    name="test_tool",
+                    description="Test tool",
+                    parameters={
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": False
+                    }
+                )
+            )]
+        )
+        current_msg = ChatMessage(role="user", content="Hello")
+        
+        print("Действие: Построение контекста...")
+        result = _build_user_input_context(request, current_msg)
+        
+        print(f"Результат: {result}")
+        print("Проверяем, что parameters очищены...")
+        input_schema = result["tools"][0]["toolSpecification"]["inputSchema"]["json"]
+        assert "required" not in input_schema
+        assert "additionalProperties" not in input_schema
+    
+    def test_mixed_tools_with_empty_and_normal_descriptions(self):
+        """
+        Что он делает: Проверяет обработку смешанного списка tools.
+        Цель: Убедиться, что пустые descriptions заменяются, а нормальные сохраняются.
+        
+        Это реальный сценарий от Cline, где большинство tools имеют
+        нормальные descriptions, но focus_chain имеет пустой.
+        """
+        print("Настройка: Смешанный список tools...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4",
+            messages=[ChatMessage(role="user", content="Hello")],
+            tools=[
+                Tool(
+                    type="function",
+                    function=ToolFunction(
+                        name="read_file",
+                        description="Read contents of a file",
+                        parameters={}
+                    )
+                ),
+                Tool(
+                    type="function",
+                    function=ToolFunction(
+                        name="focus_chain",
+                        description="",
+                        parameters={}
+                    )
+                ),
+                Tool(
+                    type="function",
+                    function=ToolFunction(
+                        name="write_file",
+                        description="Write content to a file",
+                        parameters={}
+                    )
+                )
+            ]
+        )
+        current_msg = ChatMessage(role="user", content="Hello")
+        
+        print("Действие: Построение контекста...")
+        result = _build_user_input_context(request, current_msg)
+        
+        print(f"Результат: {result}")
+        print("Проверяем descriptions...")
+        tools = result["tools"]
+        assert tools[0]["toolSpecification"]["description"] == "Read contents of a file"
+        assert tools[1]["toolSpecification"]["description"] == "Tool: focus_chain"
+        assert tools[2]["toolSpecification"]["description"] == "Write content to a file"
 
 
 class TestBuildKiroPayloadToolCallsIntegration:

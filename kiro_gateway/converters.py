@@ -507,6 +507,57 @@ def build_kiro_payload(
     return payload
 
 
+def _sanitize_json_schema(schema: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Очищает JSON Schema от полей, которые Kiro API не принимает.
+    
+    Kiro API возвращает ошибку 400 "Improperly formed request" если:
+    - required является пустым массивом []
+    - additionalProperties присутствует в схеме
+    
+    Эта функция рекурсивно обрабатывает схему и удаляет проблемные поля.
+    
+    Args:
+        schema: JSON Schema для очистки
+    
+    Returns:
+        Очищенная копия схемы
+    """
+    if not schema:
+        return {}
+    
+    # Создаём копию чтобы не мутировать оригинал
+    result = {}
+    
+    for key, value in schema.items():
+        # Пропускаем пустые required массивы
+        if key == "required" and isinstance(value, list) and len(value) == 0:
+            continue
+        
+        # Пропускаем additionalProperties - Kiro API его не поддерживает
+        if key == "additionalProperties":
+            continue
+        
+        # Рекурсивно обрабатываем вложенные объекты
+        if key == "properties" and isinstance(value, dict):
+            result[key] = {
+                prop_name: _sanitize_json_schema(prop_value) if isinstance(prop_value, dict) else prop_value
+                for prop_name, prop_value in value.items()
+            }
+        elif isinstance(value, dict):
+            result[key] = _sanitize_json_schema(value)
+        elif isinstance(value, list):
+            # Обрабатываем списки (например, anyOf, oneOf)
+            result[key] = [
+                _sanitize_json_schema(item) if isinstance(item, dict) else item
+                for item in value
+            ]
+        else:
+            result[key] = value
+    
+    return result
+
+
 def _build_user_input_context(
     request_data: ChatCompletionRequest,
     current_message: ChatMessage,
@@ -536,11 +587,21 @@ def _build_user_input_context(
         tools_list = []
         for tool in tools_to_use:
             if tool.type == "function":
+                # Очищаем parameters от полей, которые Kiro API не принимает
+                sanitized_params = _sanitize_json_schema(tool.function.parameters)
+                
+                # Kiro API требует непустое description
+                # Если description пустое или None, используем placeholder
+                description = tool.function.description
+                if not description or not description.strip():
+                    description = f"Tool: {tool.function.name}"
+                    logger.debug(f"Tool '{tool.function.name}' has empty description, using placeholder")
+                
                 tools_list.append({
                     "toolSpecification": {
                         "name": tool.function.name,
-                        "description": tool.function.description or "",
-                        "inputSchema": {"json": tool.function.parameters or {}}
+                        "description": description,
+                        "inputSchema": {"json": sanitized_params}
                     }
                 })
         if tools_list:
