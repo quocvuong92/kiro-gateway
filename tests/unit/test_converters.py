@@ -382,6 +382,121 @@ class TestMergeAdjacentMessages:
         assert len(result) == 1
         assert isinstance(result[0].content, list)
         assert len(result[0].content) == 2
+    
+    def test_merges_adjacent_assistant_tool_calls(self):
+        """
+        Что он делает: Проверяет объединение tool_calls при merge соседних assistant сообщений.
+        Цель: Убедиться, что tool_calls из всех assistant сообщений сохраняются при объединении.
+        
+        Это критический тест для бага, когда Codex CLI отправляет несколько assistant
+        сообщений подряд, каждое со своим tool_call. Без этого фикса второй tool_call
+        терялся, что приводило к ошибке 400 от Kiro API (toolResult без toolUse).
+        """
+        print("Настройка: Два assistant сообщения с разными tool_calls...")
+        messages = [
+            ChatMessage(
+                role="assistant",
+                content=None,
+                tool_calls=[{
+                    "id": "tooluse_first",
+                    "type": "function",
+                    "function": {
+                        "name": "shell",
+                        "arguments": '{"command": ["ls", "-la"]}'
+                    }
+                }]
+            ),
+            ChatMessage(
+                role="assistant",
+                content=None,
+                tool_calls=[{
+                    "id": "tooluse_second",
+                    "type": "function",
+                    "function": {
+                        "name": "shell",
+                        "arguments": '{"command": ["pwd"]}'
+                    }
+                }]
+            )
+        ]
+        
+        print("Действие: Объединение сообщений...")
+        result = merge_adjacent_messages(messages)
+        
+        print(f"Результат: {result}")
+        print(f"Сравниваем длину: Ожидалось 1, Получено {len(result)}")
+        assert len(result) == 1
+        assert result[0].role == "assistant"
+        
+        print("Проверяем, что оба tool_calls сохранены...")
+        assert result[0].tool_calls is not None
+        print(f"Сравниваем количество tool_calls: Ожидалось 2, Получено {len(result[0].tool_calls)}")
+        assert len(result[0].tool_calls) == 2
+        
+        tool_ids = [tc["id"] for tc in result[0].tool_calls]
+        print(f"Tool IDs: {tool_ids}")
+        assert "tooluse_first" in tool_ids
+        assert "tooluse_second" in tool_ids
+    
+    def test_merges_three_adjacent_assistant_tool_calls(self):
+        """
+        Что он делает: Проверяет объединение tool_calls из трёх assistant сообщений.
+        Цель: Убедиться, что все tool_calls сохраняются при объединении более двух сообщений.
+        """
+        print("Настройка: Три assistant сообщения с tool_calls...")
+        messages = [
+            ChatMessage(
+                role="assistant",
+                content="",
+                tool_calls=[{"id": "call_1", "type": "function", "function": {"name": "tool1", "arguments": "{}"}}]
+            ),
+            ChatMessage(
+                role="assistant",
+                content="",
+                tool_calls=[{"id": "call_2", "type": "function", "function": {"name": "tool2", "arguments": "{}"}}]
+            ),
+            ChatMessage(
+                role="assistant",
+                content="",
+                tool_calls=[{"id": "call_3", "type": "function", "function": {"name": "tool3", "arguments": "{}"}}]
+            )
+        ]
+        
+        print("Действие: Объединение сообщений...")
+        result = merge_adjacent_messages(messages)
+        
+        print(f"Результат: {result}")
+        assert len(result) == 1
+        assert len(result[0].tool_calls) == 3
+        
+        tool_ids = [tc["id"] for tc in result[0].tool_calls]
+        print(f"Сравниваем tool IDs: Ожидалось ['call_1', 'call_2', 'call_3'], Получено {tool_ids}")
+        assert tool_ids == ["call_1", "call_2", "call_3"]
+    
+    def test_merges_assistant_with_and_without_tool_calls(self):
+        """
+        Что он делает: Проверяет объединение assistant с tool_calls и без.
+        Цель: Убедиться, что tool_calls корректно инициализируются при объединении.
+        """
+        print("Настройка: Assistant без tool_calls + assistant с tool_calls...")
+        messages = [
+            ChatMessage(role="assistant", content="Thinking...", tool_calls=None),
+            ChatMessage(
+                role="assistant",
+                content="",
+                tool_calls=[{"id": "call_1", "type": "function", "function": {"name": "tool1", "arguments": "{}"}}]
+            )
+        ]
+        
+        print("Действие: Объединение сообщений...")
+        result = merge_adjacent_messages(messages)
+        
+        print(f"Результат: {result}")
+        assert len(result) == 1
+        assert result[0].tool_calls is not None
+        print(f"Сравниваем количество tool_calls: Ожидалось 1, Получено {len(result[0].tool_calls)}")
+        assert len(result[0].tool_calls) == 1
+        assert result[0].tool_calls[0]["id"] == "call_1"
 
 
 class TestBuildKiroHistory:
@@ -914,6 +1029,101 @@ class TestBuildUserInputContext:
         
         print(f"Сравниваем результат: Ожидалось {{}}, Получено {result}")
         assert result == {}
+
+
+class TestBuildKiroPayloadToolCallsIntegration:
+    """
+    Интеграционные тесты для build_kiro_payload с tool_calls.
+    Проверяет полный flow от OpenAI формата до Kiro формата.
+    """
+    
+    def test_multiple_assistant_tool_calls_with_results(self):
+        """
+        Что он делает: Проверяет полный сценарий с несколькими assistant tool_calls и их результатами.
+        Цель: Убедиться, что все toolUses и toolResults корректно связываются в Kiro payload.
+        
+        Это интеграционный тест для бага Codex CLI, где несколько assistant сообщений
+        с tool_calls отправлялись подряд, а затем tool results. Без фикса второй toolUse
+        терялся, что приводило к ошибке 400 от Kiro API.
+        """
+        print("Настройка: Полный сценарий с двумя tool_calls и их результатами...")
+        request = ChatCompletionRequest(
+            model="claude-sonnet-4-5",
+            messages=[
+                ChatMessage(role="user", content="Run two commands"),
+                # Первый assistant с tool_call
+                ChatMessage(
+                    role="assistant",
+                    content=None,
+                    tool_calls=[{
+                        "id": "tooluse_first",
+                        "type": "function",
+                        "function": {
+                            "name": "shell",
+                            "arguments": '{"command": ["ls"]}'
+                        }
+                    }]
+                ),
+                # Второй assistant с tool_call (подряд!)
+                ChatMessage(
+                    role="assistant",
+                    content=None,
+                    tool_calls=[{
+                        "id": "tooluse_second",
+                        "type": "function",
+                        "function": {
+                            "name": "shell",
+                            "arguments": '{"command": ["pwd"]}'
+                        }
+                    }]
+                ),
+                # Результаты обоих tool_calls
+                ChatMessage(role="tool", content="file1.txt\nfile2.txt", tool_call_id="tooluse_first"),
+                ChatMessage(role="tool", content="/home/user", tool_call_id="tooluse_second")
+            ]
+        )
+        
+        print("Действие: Построение Kiro payload...")
+        result = build_kiro_payload(request, "conv-123", "arn:aws:test")
+        
+        print(f"Результат: {result}")
+        
+        # Проверяем историю
+        history = result["conversationState"].get("history", [])
+        print(f"История: {history}")
+        
+        # Должен быть userInputMessage и assistantResponseMessage в истории
+        assert len(history) >= 2, f"Ожидалось минимум 2 элемента в истории, получено {len(history)}"
+        
+        # Находим assistantResponseMessage
+        assistant_msgs = [h for h in history if "assistantResponseMessage" in h]
+        print(f"Assistant сообщения в истории: {assistant_msgs}")
+        assert len(assistant_msgs) >= 1, "Должен быть хотя бы один assistantResponseMessage"
+        
+        # Проверяем, что в assistantResponseMessage есть оба toolUses
+        assistant_msg = assistant_msgs[0]["assistantResponseMessage"]
+        tool_uses = assistant_msg.get("toolUses", [])
+        print(f"ToolUses в assistant: {tool_uses}")
+        print(f"Сравниваем количество toolUses: Ожидалось 2, Получено {len(tool_uses)}")
+        assert len(tool_uses) == 2, f"Должно быть 2 toolUses, получено {len(tool_uses)}"
+        
+        tool_use_ids = [tu["toolUseId"] for tu in tool_uses]
+        print(f"ToolUse IDs: {tool_use_ids}")
+        assert "tooluse_first" in tool_use_ids
+        assert "tooluse_second" in tool_use_ids
+        
+        # Проверяем currentMessage содержит toolResults
+        current_msg = result["conversationState"]["currentMessage"]["userInputMessage"]
+        context = current_msg.get("userInputMessageContext", {})
+        tool_results = context.get("toolResults", [])
+        print(f"ToolResults в currentMessage: {tool_results}")
+        print(f"Сравниваем количество toolResults: Ожидалось 2, Получено {len(tool_results)}")
+        assert len(tool_results) == 2, f"Должно быть 2 toolResults, получено {len(tool_results)}"
+        
+        tool_result_ids = [tr["toolUseId"] for tr in tool_results]
+        print(f"ToolResult IDs: {tool_result_ids}")
+        assert "tooluse_first" in tool_result_ids
+        assert "tooluse_second" in tool_result_ids
 
 
 class TestBuildKiroPayload:

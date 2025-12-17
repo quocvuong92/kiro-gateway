@@ -269,6 +269,10 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
             except (json.JSONDecodeError, KeyError):
                 pass
             
+            # Сбрасываем debug логи при ошибке (режим "errors")
+            if debug_logger:
+                debug_logger.flush_on_error(response.status_code, error_message)
+            
             # Возвращаем ошибку в формате OpenAI API
             return JSONResponse(
                 status_code=response.status_code,
@@ -285,6 +289,10 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
         # Конвертируем Pydantic модели в словари для токенизатора
         messages_for_tokenizer = [msg.model_dump() for msg in request_data.messages]
         tools_for_tokenizer = [tool.model_dump() for tool in request_data.tools] if request_data.tools else None
+        
+        # Успешный запрос - очищаем буферы debug логов (режим "errors")
+        if debug_logger:
+            debug_logger.discard_buffers()
         
         if request_data.stream:
             # Streaming режим
@@ -321,10 +329,16 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
             await http_client.close()
             return JSONResponse(content=openai_response)
     
-    except HTTPException:
+    except HTTPException as e:
         await http_client.close()
+        # Сбрасываем debug логи при HTTP ошибке (режим "errors")
+        if debug_logger:
+            debug_logger.flush_on_error(e.status_code, str(e.detail))
         raise
     except Exception as e:
         await http_client.close()
         logger.error(f"Internal error: {e}", exc_info=True)
+        # Сбрасываем debug логи при внутренней ошибке (режим "errors")
+        if debug_logger:
+            debug_logger.flush_on_error(500, str(e))
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

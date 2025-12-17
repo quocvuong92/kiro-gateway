@@ -76,6 +76,7 @@ tests/
 │   ├── test_cache.py               # Тесты ModelInfoCache
 │   ├── test_config.py              # Тесты конфигурации (LOG_LEVEL и др.)
 │   ├── test_converters.py          # Тесты конвертеров OpenAI <-> Kiro
+│   ├── test_debug_logger.py        # Тесты DebugLogger (режимы off/errors/all)
 │   ├── test_parsers.py             # Тесты AwsEventStreamParser
 │   ├── test_streaming.py           # Тесты streaming функций
 │   ├── test_tokenizer.py           # Тесты токенизатора (tiktoken)
@@ -385,6 +386,106 @@ Unit-тесты для **модуля конфигурации** (загрузк
 
 ---
 
+### `tests/unit/test_debug_logger.py`
+
+Unit-тесты для **DebugLogger** (отладочное логирование запросов). **20 тестов.**
+
+#### `TestDebugLoggerModeOff`
+
+Тесты для режима DEBUG_MODE=off.
+
+- **`test_prepare_new_request_does_nothing()`**:
+  - **Что он делает**: Проверяет, что prepare_new_request ничего не делает в режиме off
+  - **Цель**: Убедиться, что в режиме off директория не создаётся
+
+- **`test_log_request_body_does_nothing()`**:
+  - **Что он делает**: Проверяет, что log_request_body ничего не делает в режиме off
+  - **Цель**: Убедиться, что данные не записываются
+
+#### `TestDebugLoggerModeAll`
+
+Тесты для режима DEBUG_MODE=all.
+
+- **`test_prepare_new_request_clears_directory()`**:
+  - **Что он делает**: Проверяет, что prepare_new_request очищает директорию в режиме all
+  - **Цель**: Убедиться, что старые логи удаляются
+
+- **`test_log_request_body_writes_immediately()`**:
+  - **Что он делает**: Проверяет, что log_request_body пишет сразу в файл в режиме all
+  - **Цель**: Убедиться, что данные записываются немедленно
+
+- **`test_log_kiro_request_body_writes_immediately()`**:
+  - **Что он делает**: Проверяет, что log_kiro_request_body пишет сразу в файл в режиме all
+  - **Цель**: Убедиться, что Kiro payload записывается немедленно
+
+- **`test_log_raw_chunk_appends_to_file()`**:
+  - **Что он делает**: Проверяет, что log_raw_chunk дописывает в файл в режиме all
+  - **Цель**: Убедиться, что чанки накапливаются
+
+#### `TestDebugLoggerModeErrors`
+
+Тесты для режима DEBUG_MODE=errors.
+
+- **`test_log_request_body_buffers_data()`**:
+  - **Что он делает**: Проверяет, что log_request_body буферизует данные в режиме errors
+  - **Цель**: Убедиться, что данные не записываются сразу
+
+- **`test_flush_on_error_writes_buffers()`**:
+  - **Что он делает**: Проверяет, что flush_on_error записывает буферы в файлы
+  - **Цель**: Убедиться, что при ошибке данные сохраняются
+
+- **`test_flush_on_error_clears_buffers()`**:
+  - **Что он делает**: Проверяет, что flush_on_error очищает буферы после записи
+  - **Цель**: Убедиться, что буферы не накапливаются между запросами
+
+- **`test_discard_buffers_clears_without_writing()`**:
+  - **Что он делает**: Проверяет, что discard_buffers очищает буферы без записи
+  - **Цель**: Убедиться, что успешные запросы не оставляют логов
+
+- **`test_flush_on_error_writes_error_info_in_mode_all()`**:
+  - **Что он делает**: Проверяет, что flush_on_error записывает error_info.json в режиме all
+  - **Цель**: Убедиться, что информация об ошибке сохраняется в обоих режимах
+
+#### `TestDebugLoggerLogErrorInfo`
+
+Тесты для метода log_error_info().
+
+- **`test_log_error_info_writes_in_mode_all()`**:
+  - **Что он делает**: Проверяет, что log_error_info записывает файл в режиме all
+  - **Цель**: Убедиться, что error_info.json создаётся при ошибках
+
+- **`test_log_error_info_writes_in_mode_errors()`**:
+  - **Что он делает**: Проверяет, что log_error_info записывает файл в режиме errors
+  - **Цель**: Убедиться, что метод работает в обоих режимах
+
+- **`test_log_error_info_does_nothing_in_mode_off()`**:
+  - **Что он делает**: Проверяет, что log_error_info ничего не делает в режиме off
+  - **Цель**: Убедиться, что в режиме off файлы не создаются
+
+#### `TestDebugLoggerHelperMethods`
+
+Тесты для вспомогательных методов DebugLogger.
+
+- **`test_is_enabled_returns_true_for_errors()`**: Проверяет _is_enabled() для режима errors
+- **`test_is_enabled_returns_true_for_all()`**: Проверяет _is_enabled() для режима all
+- **`test_is_enabled_returns_false_for_off()`**: Проверяет _is_enabled() для режима off
+- **`test_is_immediate_write_returns_true_for_all()`**: Проверяет _is_immediate_write() для режима all
+- **`test_is_immediate_write_returns_false_for_errors()`**: Проверяет _is_immediate_write() для режима errors
+
+#### `TestDebugLoggerJsonHandling`
+
+Тесты для обработки JSON в DebugLogger.
+
+- **`test_log_request_body_formats_json_pretty()`**:
+  - **Что он делает**: Проверяет, что JSON форматируется красиво
+  - **Цель**: Убедиться, что JSON читаем в файле
+
+- **`test_log_request_body_handles_invalid_json()`**:
+  - **Что он делает**: Проверяет обработку невалидного JSON
+  - **Цель**: Убедиться, что невалидный JSON записывается как есть
+
+---
+
 ### `tests/unit/test_converters.py`
 
 Unit-тесты для конвертеров **OpenAI <-> Kiro**. **50 тестов.**
@@ -437,6 +538,26 @@ Unit-тесты для конвертеров **OpenAI <-> Kiro**. **50 тест
 - **`test_merges_list_contents_correctly()`**:
   - **Что он делает**: Проверяет объединение list contents
   - **Цель**: Убедиться, что списки объединяются корректно
+
+- **`test_merges_adjacent_assistant_tool_calls()`**:
+  - **Что он делает**: Проверяет объединение tool_calls при merge соседних assistant сообщений
+  - **Цель**: Убедиться, что tool_calls из всех assistant сообщений сохраняются при объединении
+
+- **`test_merges_three_adjacent_assistant_tool_calls()`**:
+  - **Что он делает**: Проверяет объединение tool_calls из трёх assistant сообщений
+  - **Цель**: Убедиться, что все tool_calls сохраняются при объединении более двух сообщений
+
+- **`test_merges_assistant_with_and_without_tool_calls()`**:
+  - **Что он делает**: Проверяет объединение assistant с tool_calls и без
+  - **Цель**: Убедиться, что tool_calls корректно инициализируются при объединении
+
+#### `TestBuildKiroPayloadToolCallsIntegration`
+
+Интеграционные тесты для полного flow tool_calls от OpenAI до Kiro формата.
+
+- **`test_multiple_assistant_tool_calls_with_results()`**:
+  - **Что он делает**: Проверяет полный сценарий с несколькими assistant tool_calls и их результатами
+  - **Цель**: Убедиться, что все toolUses и toolResults корректно связываются в Kiro payload
 
 #### `TestBuildKiroHistory`
 

@@ -45,6 +45,7 @@ from kiro_gateway.config import (
     KIRO_CREDS_FILE,
     PROXY_API_KEY,
     LOG_LEVEL,
+    _warn_deprecated_debug_setting,
 )
 from kiro_gateway.auth import KiroAuthManager
 from kiro_gateway.cache import ModelInfoCache
@@ -148,6 +149,9 @@ def validate_configuration() -> None:
 
 # Run configuration validation on import
 validate_configuration()
+
+# Warn about deprecated DEBUG_LAST_REQUEST if used
+_warn_deprecated_debug_setting()
 
 
 # --- Lifespan Manager ---

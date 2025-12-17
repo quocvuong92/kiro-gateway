@@ -17,23 +17,34 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Модуль для отладочного логирования последнего запроса.
+Модуль для отладочного логирования запросов.
 
-Сохраняет данные запроса и потоки ответов в файлы для последующего анализа.
-Активен только когда DEBUG_LAST_REQUEST=true в окружении.
+Поддерживает три режима (DEBUG_MODE):
+- off: логирование отключено
+- errors: логи сохраняются только при ошибках (4xx, 5xx)
+- all: логи перезаписываются на каждый запрос
+
+В режиме "errors" данные буферизуются в памяти и сбрасываются в файлы
+только при вызове flush_on_error().
 """
 
 import json
 import shutil
 from pathlib import Path
+from typing import Optional
 from loguru import logger
 
-from kiro_gateway.config import DEBUG_LAST_REQUEST, DEBUG_DIR
+from kiro_gateway.config import DEBUG_MODE, DEBUG_DIR
 
 
 class DebugLogger:
     """
-    Синглтон для управления отладочными логами последнего запроса.
+    Синглтон для управления отладочными логами запросов.
+    
+    Режимы работы:
+    - off: ничего не делает
+    - errors: буферизует данные, сбрасывает в файлы только при ошибках
+    - all: пишет данные сразу в файлы (как раньше)
     """
     _instance = None
 
@@ -48,86 +59,258 @@ class DebugLogger:
             return
         self.debug_dir = Path(DEBUG_DIR)
         self._initialized = True
+        
+        # Буферы для режима "errors"
+        self._request_body_buffer: Optional[bytes] = None
+        self._kiro_request_body_buffer: Optional[bytes] = None
+        self._raw_chunks_buffer: bytearray = bytearray()
+        self._modified_chunks_buffer: bytearray = bytearray()
+    
+    def _is_enabled(self) -> bool:
+        """Проверяет, включено ли логирование."""
+        return DEBUG_MODE in ("errors", "all")
+    
+    def _is_immediate_write(self) -> bool:
+        """Проверяет, нужно ли писать сразу в файлы (режим all)."""
+        return DEBUG_MODE == "all"
+    
+    def _clear_buffers(self):
+        """Очищает все буферы."""
+        self._request_body_buffer = None
+        self._kiro_request_body_buffer = None
+        self._raw_chunks_buffer.clear()
+        self._modified_chunks_buffer.clear()
 
     def prepare_new_request(self):
         """
-        Очищает папку с логами и создает её заново для нового запроса.
+        Подготавливает логгер для нового запроса.
+        
+        В режиме "all": очищает папку с логами.
+        В режиме "errors": очищает буферы.
         """
-        if not DEBUG_LAST_REQUEST:
+        if not self._is_enabled():
             return
+        
+        # Очищаем буферы в любом случае
+        self._clear_buffers()
 
-        try:
-            if self.debug_dir.exists():
-                shutil.rmtree(self.debug_dir)
-            self.debug_dir.mkdir(parents=True, exist_ok=True)
-            logger.debug(f"[DebugLogger] Directory {self.debug_dir} cleared for new request.")
-        except Exception as e:
-            logger.error(f"[DebugLogger] Error preparing directory: {e}")
+        if self._is_immediate_write():
+            # Режим "all" - очищаем папку и создаём заново
+            try:
+                if self.debug_dir.exists():
+                    shutil.rmtree(self.debug_dir)
+                self.debug_dir.mkdir(parents=True, exist_ok=True)
+                logger.debug(f"[DebugLogger] Directory {self.debug_dir} cleared for new request.")
+            except Exception as e:
+                logger.error(f"[DebugLogger] Error preparing directory: {e}")
 
     def log_request_body(self, body: bytes):
         """
-        Сохраняет тело запроса (от клиента, OpenAI формат) в JSON файл.
+        Сохраняет тело запроса (от клиента, OpenAI формат).
+        
+        В режиме "all": пишет сразу в файл.
+        В режиме "errors": буферизует.
         """
-        if not DEBUG_LAST_REQUEST:
+        if not self._is_enabled():
             return
 
+        if self._is_immediate_write():
+            self._write_request_body_to_file(body)
+        else:
+            # Режим "errors" - буферизуем
+            self._request_body_buffer = body
+
+    def log_kiro_request_body(self, body: bytes):
+        """
+        Сохраняет модифицированное тело запроса (к Kiro API).
+        
+        В режиме "all": пишет сразу в файл.
+        В режиме "errors": буферизует.
+        """
+        if not self._is_enabled():
+            return
+
+        if self._is_immediate_write():
+            self._write_kiro_request_body_to_file(body)
+        else:
+            # Режим "errors" - буферизуем
+            self._kiro_request_body_buffer = body
+
+    def log_raw_chunk(self, chunk: bytes):
+        """
+        Дописывает сырой чанк ответа (от провайдера).
+        
+        В режиме "all": пишет сразу в файл.
+        В режиме "errors": буферизует.
+        """
+        if not self._is_enabled():
+            return
+
+        if self._is_immediate_write():
+            self._append_raw_chunk_to_file(chunk)
+        else:
+            # Режим "errors" - буферизуем
+            self._raw_chunks_buffer.extend(chunk)
+
+    def log_modified_chunk(self, chunk: bytes):
+        """
+        Дописывает модифицированный чанк (клиенту).
+        
+        В режиме "all": пишет сразу в файл.
+        В режиме "errors": буферизует.
+        """
+        if not self._is_enabled():
+            return
+
+        if self._is_immediate_write():
+            self._append_modified_chunk_to_file(chunk)
+        else:
+            # Режим "errors" - буферизуем
+            self._modified_chunks_buffer.extend(chunk)
+    
+    def log_error_info(self, status_code: int, error_message: str = ""):
+        """
+        Записывает информацию об ошибке в файл.
+        
+        Работает в обоих режимах (errors и all).
+        В режиме "all" записывает сразу в файл.
+        В режиме "errors" вызывается из flush_on_error().
+        
+        Args:
+            status_code: HTTP статус код ошибки
+            error_message: Сообщение об ошибке (опционально)
+        """
+        if not self._is_enabled():
+            return
+        
+        try:
+            # Убеждаемся что директория существует
+            self.debug_dir.mkdir(parents=True, exist_ok=True)
+            
+            error_info = {
+                "status_code": status_code,
+                "error_message": error_message
+            }
+            error_file = self.debug_dir / "error_info.json"
+            with open(error_file, "w", encoding="utf-8") as f:
+                json.dump(error_info, f, indent=2, ensure_ascii=False)
+            
+            logger.debug(f"[DebugLogger] Error info saved (status={status_code})")
+        except Exception as e:
+            logger.error(f"[DebugLogger] Error writing error_info: {e}")
+
+    def flush_on_error(self, status_code: int, error_message: str = ""):
+        """
+        Сбрасывает буферы в файлы при ошибке.
+        
+        В режиме "errors": сбрасывает буферы и сохраняет error_info.
+        В режиме "all": только сохраняет error_info (данные уже записаны).
+        
+        Args:
+            status_code: HTTP статус код ошибки
+            error_message: Сообщение об ошибке (опционально)
+        """
+        if not self._is_enabled():
+            return
+        
+        # В режиме "all" данные уже записаны, только добавляем error_info
+        if self._is_immediate_write():
+            self.log_error_info(status_code, error_message)
+            return
+        
+        # Проверяем, есть ли что сбрасывать
+        if not any([
+            self._request_body_buffer,
+            self._kiro_request_body_buffer,
+            self._raw_chunks_buffer,
+            self._modified_chunks_buffer
+        ]):
+            return
+        
+        try:
+            # Создаём директорию если не существует
+            if self.debug_dir.exists():
+                shutil.rmtree(self.debug_dir)
+            self.debug_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Сбрасываем буферы в файлы
+            if self._request_body_buffer:
+                self._write_request_body_to_file(self._request_body_buffer)
+            
+            if self._kiro_request_body_buffer:
+                self._write_kiro_request_body_to_file(self._kiro_request_body_buffer)
+            
+            if self._raw_chunks_buffer:
+                file_path = self.debug_dir / "response_stream_raw.txt"
+                with open(file_path, "wb") as f:
+                    f.write(self._raw_chunks_buffer)
+            
+            if self._modified_chunks_buffer:
+                file_path = self.debug_dir / "response_stream_modified.txt"
+                with open(file_path, "wb") as f:
+                    f.write(self._modified_chunks_buffer)
+            
+            # Сохраняем информацию об ошибке
+            self.log_error_info(status_code, error_message)
+            
+            logger.info(f"[DebugLogger] Error logs flushed to {self.debug_dir} (status={status_code})")
+            
+        except Exception as e:
+            logger.error(f"[DebugLogger] Error flushing buffers: {e}")
+        finally:
+            # Очищаем буферы после сброса
+            self._clear_buffers()
+    
+    def discard_buffers(self):
+        """
+        Очищает буферы без записи в файлы.
+        
+        Вызывается когда запрос завершился успешно в режиме "errors".
+        """
+        if DEBUG_MODE == "errors":
+            self._clear_buffers()
+    
+    # ==================== Приватные методы записи в файлы ====================
+    
+    def _write_request_body_to_file(self, body: bytes):
+        """Записывает тело запроса в файл."""
         try:
             file_path = self.debug_dir / "request_body.json"
-            # Пытаемся сохранить как красивый JSON
             try:
                 json_obj = json.loads(body)
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(json_obj, f, indent=2, ensure_ascii=False)
             except json.JSONDecodeError:
-                # Если не JSON, пишем как есть (байты -> строка, если получится)
                 with open(file_path, "wb") as f:
                     f.write(body)
         except Exception as e:
             logger.error(f"[DebugLogger] Error writing request_body: {e}")
-
-    def log_kiro_request_body(self, body: bytes):
-        """
-        Сохраняет модифицированное тело запроса (к Kiro API) в JSON файл.
-        """
-        if not DEBUG_LAST_REQUEST:
-            return
-
+    
+    def _write_kiro_request_body_to_file(self, body: bytes):
+        """Записывает тело запроса к Kiro в файл."""
         try:
             file_path = self.debug_dir / "kiro_request_body.json"
-            # Пытаемся сохранить как красивый JSON
             try:
                 json_obj = json.loads(body)
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(json_obj, f, indent=2, ensure_ascii=False)
             except json.JSONDecodeError:
-                # Если не JSON, пишем как есть (байты -> строка, если получится)
                 with open(file_path, "wb") as f:
                     f.write(body)
         except Exception as e:
             logger.error(f"[DebugLogger] Error writing kiro_request_body: {e}")
-
-    def log_raw_chunk(self, chunk: bytes):
-        """
-        Дописывает сырой чанк ответа (от провайдера) в файл.
-        """
-        if not DEBUG_LAST_REQUEST:
-            return
-
+    
+    def _append_raw_chunk_to_file(self, chunk: bytes):
+        """Дописывает сырой чанк в файл."""
         try:
             file_path = self.debug_dir / "response_stream_raw.txt"
             with open(file_path, "ab") as f:
                 f.write(chunk)
         except Exception:
-            # Не логируем ошибку на каждый чанк, чтобы не спамить
             pass
-
-    def log_modified_chunk(self, chunk: bytes):
-        """
-        Дописывает модифицированный чанк (клиенту) в файл.
-        """
-        if not DEBUG_LAST_REQUEST:
-            return
-
+    
+    def _append_modified_chunk_to_file(self, chunk: bytes):
+        """Дописывает модифицированный чанк в файл."""
         try:
             file_path = self.debug_dir / "response_stream_modified.txt"
             with open(file_path, "ab") as f:

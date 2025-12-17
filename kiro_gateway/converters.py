@@ -163,6 +163,16 @@ def merge_adjacent_messages(messages: List[ChatMessage]) -> List[ChatMessage]:
                 last_text = extract_text_content(last.content)
                 current_text = extract_text_content(msg.content)
                 last.content = f"{last_text}\n{current_text}"
+            
+            # Объединяем tool_calls для assistant сообщений
+            # Критично: без этого теряются tool_calls из второго и последующих сообщений,
+            # что приводит к ошибке 400 от Kiro API (toolResult без соответствующего toolUse)
+            if msg.role == "assistant" and msg.tool_calls:
+                if last.tool_calls is None:
+                    last.tool_calls = []
+                last.tool_calls = list(last.tool_calls) + list(msg.tool_calls)
+                logger.debug(f"Merged tool_calls: added {len(msg.tool_calls)} tool calls, total now: {len(last.tool_calls)}")
+            
             logger.debug(f"Merged adjacent messages with role {msg.role}")
         else:
             merged.append(msg)

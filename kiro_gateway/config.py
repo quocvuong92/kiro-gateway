@@ -238,18 +238,60 @@ FIRST_TOKEN_MAX_RETRIES: int = int(os.getenv("FIRST_TOKEN_MAX_RETRIES", "3"))
 # Debug Settings
 # ==================================================================================================
 
-# If True, the last request will be logged in detail to DEBUG_DIR
-# Enable via .env: DEBUG_LAST_REQUEST=true
-DEBUG_LAST_REQUEST: bool = os.getenv("DEBUG_LAST_REQUEST", "false").lower() in ("true", "1", "yes")
+# Legacy option (deprecated, will be removed in future releases)
+# Use DEBUG_MODE instead
+_DEBUG_LAST_REQUEST_RAW: str = os.getenv("DEBUG_LAST_REQUEST", "").lower()
+DEBUG_LAST_REQUEST: bool = _DEBUG_LAST_REQUEST_RAW in ("true", "1", "yes")
+
+# Debug logging mode:
+# - off: disabled (default)
+# - errors: save logs only for failed requests (4xx, 5xx)
+# - all: save logs for every request (overwrites on each request)
+_DEBUG_MODE_RAW: str = os.getenv("DEBUG_MODE", "").lower()
+
+# Priority logic:
+# 1. If DEBUG_MODE is explicitly set → use it
+# 2. If DEBUG_MODE is not set but DEBUG_LAST_REQUEST=true → mode "all" (backward compatibility)
+# 3. Otherwise → mode "off"
+if _DEBUG_MODE_RAW in ("off", "errors", "all"):
+    DEBUG_MODE: str = _DEBUG_MODE_RAW
+elif DEBUG_LAST_REQUEST:
+    DEBUG_MODE: str = "all"
+else:
+    DEBUG_MODE: str = "off"
 
 # Directory for debug log files
 DEBUG_DIR: str = os.getenv("DEBUG_DIR", "debug_logs")
+
+
+def _warn_deprecated_debug_setting():
+    """
+    Выводит предупреждение если используется deprecated DEBUG_LAST_REQUEST.
+    Вызывается при старте приложения.
+    """
+    if _DEBUG_LAST_REQUEST_RAW and not _DEBUG_MODE_RAW:
+        import sys
+        # ANSI escape codes: желтый текст
+        YELLOW = "\033[93m"
+        RESET = "\033[0m"
+        
+        warning_text = f"""
+{YELLOW}⚠️  DEPRECATED: DEBUG_LAST_REQUEST will be removed in future releases.
+    Please use DEBUG_MODE instead:
+      - DEBUG_MODE=off     (disabled, default)
+      - DEBUG_MODE=errors  (save logs only for failed requests)
+      - DEBUG_MODE=all     (save logs for every request)
+    
+    DEBUG_LAST_REQUEST=true is equivalent to DEBUG_MODE=all
+    See .env.example for more details.{RESET}
+"""
+        print(warning_text, file=sys.stderr)
 
 # ==================================================================================================
 # Версия приложения
 # ==================================================================================================
 
-APP_VERSION: str = "1.0.3"
+APP_VERSION: str = "1.0.4"
 APP_TITLE: str = "Kiro API Gateway"
 APP_DESCRIPTION: str = "OpenAI-compatible interface for Kiro API (AWS CodeWhisperer). Made by @jwadow"
 
