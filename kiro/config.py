@@ -28,6 +28,7 @@ import os
 import re
 from pathlib import Path
 from typing import Dict, List, Optional
+
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -37,44 +38,45 @@ load_dotenv()
 def _get_raw_env_value(var_name: str, env_file: str = ".env") -> Optional[str]:
     """
     Read variable value from .env file without processing escape sequences.
-    
+
     This is necessary for correct handling of Windows paths where backslashes
     (e.g., D:\\Projects\\file.json) may be incorrectly interpreted
     as escape sequences (\\a -> bell, \\n -> newline, etc.).
-    
+
     Args:
         var_name: Environment variable name
         env_file: Path to .env file (default ".env")
-    
+
     Returns:
         Raw variable value or None if not found
     """
     env_path = Path(env_file)
     if not env_path.exists():
         return None
-    
+
     try:
         # Read file as-is, without interpretation
         content = env_path.read_text(encoding="utf-8")
-        
+
         # Search for variable considering different formats:
         # VAR="value" or VAR='value' or VAR=value
         # Pattern captures value with or without quotes
         pattern = rf'^{re.escape(var_name)}=(["\']?)(.+?)\1\s*$'
-        
+
         for line in content.splitlines():
             line = line.strip()
             if line.startswith("#") or not line:
                 continue
-            
+
             match = re.match(pattern, line)
             if match:
                 # Return value as-is, without processing escape sequences
                 return match.group(2)
     except Exception:
         pass
-    
+
     return None
+
 
 # ==================================================================================================
 # Server Settings
@@ -136,22 +138,61 @@ REGION: str = os.getenv("KIRO_REGION", "us-east-1")
 # Path to credentials file (optional, alternative to .env)
 # Read directly from .env to avoid escape sequence issues on Windows
 # (e.g., \a in path D:\Projects\adolf is interpreted as bell character)
-_raw_creds_file = _get_raw_env_value("KIRO_CREDS_FILE") or os.getenv("KIRO_CREDS_FILE", "")
+_raw_creds_file = _get_raw_env_value("KIRO_CREDS_FILE") or os.getenv(
+    "KIRO_CREDS_FILE", ""
+)
 # Normalize path for cross-platform compatibility
 KIRO_CREDS_FILE: str = str(Path(_raw_creds_file)) if _raw_creds_file else ""
 
 # Path to kiro-cli SQLite database (optional, for AWS SSO OIDC authentication)
 # Default location: ~/.local/share/kiro-cli/data.sqlite3 (Linux/macOS)
 # or ~/.local/share/amazon-q/data.sqlite3 (amazon-q-developer-cli)
-_raw_cli_db_file = _get_raw_env_value("KIRO_CLI_DB_FILE") or os.getenv("KIRO_CLI_DB_FILE", "")
+_raw_cli_db_file = _get_raw_env_value("KIRO_CLI_DB_FILE") or os.getenv(
+    "KIRO_CLI_DB_FILE", ""
+)
 KIRO_CLI_DB_FILE: str = str(Path(_raw_cli_db_file)) if _raw_cli_db_file else ""
+
+# ==================================================================================================
+# Multi-Account Settings
+# ==================================================================================================
+
+# Directory containing kiro-*.json credential files for multi-account support
+# If set, the gateway will auto-discover all files matching pattern "kiro-*.json"
+# and load balance requests across all valid accounts using round-robin strategy
+# Leave empty to use single-account mode (KIRO_CREDS_FILE)
+_raw_accounts_dir = _get_raw_env_value("KIRO_ACCOUNTS_DIR") or os.getenv(
+    "KIRO_ACCOUNTS_DIR", ""
+)
+KIRO_ACCOUNTS_DIR: str = (
+    str(Path(_raw_accounts_dir).expanduser()) if _raw_accounts_dir else ""
+)
+
+# Load balancing strategy for multi-account mode
+# - "round_robin": Cycle through accounts evenly (default)
+# - "random": Pick random account for each request
+# - "least_used": Use account with fewest recent requests
+KIRO_LOAD_BALANCE_STRATEGY: str = os.getenv("KIRO_LOAD_BALANCE_STRATEGY", "round_robin")
+
+# Skip accounts with credentials expiring within N seconds
+# Accounts close to expiration will be excluded from the pool
+KIRO_SKIP_EXPIRING_THRESHOLD: int = int(
+    os.getenv("KIRO_SKIP_EXPIRING_THRESHOLD", "300")
+)
+
+# Enable sticky sessions (same conversation uses same account)
+# When enabled, requests with the same conversation_id will route to the same account
+KIRO_STICKY_SESSIONS: bool = (
+    os.getenv("KIRO_STICKY_SESSIONS", "false").lower() == "true"
+)
 
 # ==================================================================================================
 # Kiro API URL Templates
 # ==================================================================================================
 
 # URL for token refresh (Kiro Desktop Auth)
-KIRO_REFRESH_URL_TEMPLATE: str = "https://prod.{region}.auth.desktop.kiro.dev/refreshToken"
+KIRO_REFRESH_URL_TEMPLATE: str = (
+    "https://prod.{region}.auth.desktop.kiro.dev/refreshToken"
+)
 
 # URL for token refresh (AWS SSO OIDC - used by kiro-cli)
 AWS_SSO_OIDC_URL_TEMPLATE: str = "https://oidc.{region}.amazonaws.com/token"
@@ -198,7 +239,6 @@ HIDDEN_MODELS: Dict[str, str] = {
     # Claude 3.7 Sonnet - legacy flagship model, still works!
     # Hidden in Kiro API but functional. Great for users who prefer it.
     "claude-3.7-sonnet": "CLAUDE_3_7_SONNET_20250219_V1_0",
-    
     # Add other hidden/experimental models here as discovered.
     # Example: "claude-secret-model": "INTERNAL_SECRET_MODEL_ID",
 }
@@ -232,7 +272,9 @@ DEFAULT_MAX_INPUT_TOKENS: int = 200000
 # Maximum length of tool description in characters.
 # Descriptions longer than this limit will be moved to system prompt.
 # Set to 0 to disable (not recommended - will cause Kiro API errors).
-TOOL_DESCRIPTION_MAX_LENGTH: int = int(os.getenv("TOOL_DESCRIPTION_MAX_LENGTH", "10000"))
+TOOL_DESCRIPTION_MAX_LENGTH: int = int(
+    os.getenv("TOOL_DESCRIPTION_MAX_LENGTH", "10000")
+)
 
 # ==================================================================================================
 # Logging Settings
@@ -304,17 +346,18 @@ def _warn_deprecated_debug_setting():
     """
     if _DEBUG_LAST_REQUEST_RAW and not _DEBUG_MODE_RAW:
         import sys
+
         # ANSI escape codes: yellow text
         YELLOW = "\033[93m"
         RESET = "\033[0m"
-        
+
         warning_text = f"""
 {YELLOW}⚠️  DEPRECATED: DEBUG_LAST_REQUEST will be removed in future releases.
     Please use DEBUG_MODE instead:
       - DEBUG_MODE=off     (disabled, default)
       - DEBUG_MODE=errors  (save logs only for failed requests)
       - DEBUG_MODE=all     (save logs for every request)
-    
+
     DEBUG_LAST_REQUEST=true is equivalent to DEBUG_MODE=all
     See .env.example for more details.{RESET}
 """
@@ -325,32 +368,34 @@ def _warn_timeout_configuration():
     """
     Print warning if timeout configuration is suboptimal.
     Called at application startup.
-    
+
     FIRST_TOKEN_TIMEOUT should be less than STREAMING_READ_TIMEOUT:
     - FIRST_TOKEN_TIMEOUT: time to wait for model to START responding
     - STREAMING_READ_TIMEOUT: time to wait BETWEEN chunks during streaming
     """
     if FIRST_TOKEN_TIMEOUT >= STREAMING_READ_TIMEOUT:
         import sys
+
         YELLOW = "\033[93m"
         RESET = "\033[0m"
-        
+
         warning_text = f"""
 {YELLOW}⚠️  WARNING: Suboptimal timeout configuration detected.
-    
+
     FIRST_TOKEN_TIMEOUT ({FIRST_TOKEN_TIMEOUT}s) >= STREAMING_READ_TIMEOUT ({STREAMING_READ_TIMEOUT}s)
-    
+
     These timeouts serve different purposes:
       - FIRST_TOKEN_TIMEOUT: time to wait for model to START responding (default: 15s)
       - STREAMING_READ_TIMEOUT: time to wait BETWEEN chunks during streaming (default: 300s)
-    
+
     Recommendation: FIRST_TOKEN_TIMEOUT should be LESS than STREAMING_READ_TIMEOUT.
-    
+
     Example configuration:
       FIRST_TOKEN_TIMEOUT=15
       STREAMING_READ_TIMEOUT=300{RESET}
 """
         print(warning_text, file=sys.stderr)
+
 
 # ==================================================================================================
 # Fake Reasoning Settings (Extended Thinking via Tag Injection)
@@ -368,7 +413,13 @@ def _warn_timeout_configuration():
 # Default: true (enabled) - provides premium experience out of the box
 _FAKE_REASONING_RAW: str = os.getenv("FAKE_REASONING", "").lower()
 # Default is True - if env var is not set or empty, enable fake reasoning
-FAKE_REASONING_ENABLED: bool = _FAKE_REASONING_RAW not in ("false", "0", "no", "disabled", "off")
+FAKE_REASONING_ENABLED: bool = _FAKE_REASONING_RAW not in (
+    "false",
+    "0",
+    "no",
+    "disabled",
+    "off",
+)
 
 # Maximum thinking length in tokens.
 # This value is injected into the request as <max_thinking_length>{value}</max_thinking_length>
@@ -383,8 +434,15 @@ FAKE_REASONING_MAX_TOKENS: int = int(os.getenv("FAKE_REASONING_MAX_TOKENS", "400
 # - "strip_tags": Remove tags but keep thinking content in regular content
 #
 # Default: "as_reasoning_content"
-_FAKE_REASONING_HANDLING_RAW: str = os.getenv("FAKE_REASONING_HANDLING", "as_reasoning_content").lower()
-if _FAKE_REASONING_HANDLING_RAW in ("as_reasoning_content", "remove", "pass", "strip_tags"):
+_FAKE_REASONING_HANDLING_RAW: str = os.getenv(
+    "FAKE_REASONING_HANDLING", "as_reasoning_content"
+).lower()
+if _FAKE_REASONING_HANDLING_RAW in (
+    "as_reasoning_content",
+    "remove",
+    "pass",
+    "strip_tags",
+):
     FAKE_REASONING_HANDLING: str = _FAKE_REASONING_HANDLING_RAW
 else:
     FAKE_REASONING_HANDLING: str = "as_reasoning_content"
@@ -392,13 +450,20 @@ else:
 # List of opening tags to detect thinking blocks.
 # The parser will look for any of these tags at the start of the response.
 # Order matters - first match wins.
-FAKE_REASONING_OPEN_TAGS: List[str] = ["<thinking>", "<think>", "<reasoning>", "<thought>"]
+FAKE_REASONING_OPEN_TAGS: List[str] = [
+    "<thinking>",
+    "<think>",
+    "<reasoning>",
+    "<thought>",
+]
 
 # Maximum size of initial buffer for tag detection (characters).
 # If no thinking tag is found within this limit, content is treated as regular response.
 # Lower values = faster first token, but may miss tags with leading whitespace.
 # Default: 30 characters (enough for longest tag + some whitespace)
-FAKE_REASONING_INITIAL_BUFFER_SIZE: int = int(os.getenv("FAKE_REASONING_INITIAL_BUFFER_SIZE", "20"))
+FAKE_REASONING_INITIAL_BUFFER_SIZE: int = int(
+    os.getenv("FAKE_REASONING_INITIAL_BUFFER_SIZE", "20")
+)
 
 
 # ==================================================================================================
@@ -428,4 +493,3 @@ def get_kiro_api_host(region: str) -> str:
 def get_kiro_q_host(region: str) -> str:
     """Return Q API host for the specified region."""
     return KIRO_Q_HOST_TEMPLATE.format(region=region)
-
