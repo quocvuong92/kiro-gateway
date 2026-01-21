@@ -1,0 +1,218 @@
+Wed Jan 21 12:39:09 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:39:09 +07 2026: kiro-gateway started (PID: 83182)
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m277[0m - [31m[1m[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m278[0m - [31m[1m============================================================[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m279[0m - [31m[1m  CONFIGURATION ERROR[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m280[0m - [31m[1m============================================================[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  .env file not found![0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  [0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  To get started:[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  1. Create .env or rename from .env.example:[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m     cp .env.example .env[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  [0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  2. Edit .env and configure your credentials:[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m     2.1. Set you super-secret password as PROXY_API_KEY[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m     2.2. Set your Kiro credentials:[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m        - 1 way: KIRO_CREDS_FILE to your Kiro credentials JSON file[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m        - 2 way: REFRESH_TOKEN from Kiro IDE traffic[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  [0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  See README.md for detailed instructions.[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m284[0m - [31m[1m============================================================[0m
+[32m2026-01-21 12:39:10[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m285[0m - [31m[1m[0m
+Wed Jan 21 12:39:19 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:39:19 +07 2026: kiro-gateway started (PID: 83401)
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m277[0m - [31m[1m[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m278[0m - [31m[1m============================================================[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m279[0m - [31m[1m  CONFIGURATION ERROR[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m280[0m - [31m[1m============================================================[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  .env file not found![0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  [0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  To get started:[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  1. Create .env or rename from .env.example:[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m     cp .env.example .env[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  [0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  2. Edit .env and configure your credentials:[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m     2.1. Set you super-secret password as PROXY_API_KEY[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m     2.2. Set your Kiro credentials:[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m        - 1 way: KIRO_CREDS_FILE to your Kiro credentials JSON file[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m        - 2 way: REFRESH_TOKEN from Kiro IDE traffic[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  [0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m283[0m - [31m[1m  See README.md for detailed instructions.[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m284[0m - [31m[1m============================================================[0m
+[32m2026-01-21 12:39:20[0m | [31m[1mERROR   [0m | [36m__main__[0m:[36mvalidate_configuration[0m:[36m285[0m - [31m[1m[0m
+Wed Jan 21 12:42:20 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:42:20 +07 2026: kiro-gateway started (PID: 84413)
+[32m2026-01-21 12:42:20[0m | [1mINFO    [0m | [36m__main__[0m:[36m<module>[0m:[36m623[0m - [1mStarting Uvicorn server on 0.0.0.0:8000...[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mStarted server process [84413][0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application startup.[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m316[0m - [1mStarting application... Creating state managers.[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m338[0m - [1mShared HTTP client created with connection pooling[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_load_credentials_from_file[0m:[36m371[0m - [1mCredentials loaded from ~/.aws/sso/cache/kiro-auth-token.json[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_detect_auth_type[0m:[36m194[0m - [1mDetected auth type: Kiro Desktop[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m356[0m - [1mLoading models from Kiro API...[0m
+[32m2026-01-21 12:42:21[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_refresh_token_kiro_desktop[0m:[36m586[0m - [1mRefreshing Kiro token via Kiro Desktop Auth...[0m
+[32m2026-01-21 12:42:22[0m | [33m[1mWARNING [0m | [36mmain[0m:[36mlifespan[0m:[36m384[0m - [33m[1mFailed to fetch models from Kiro API: Client error '401 Unauthorized' for url 'https://prod.us-east-1.auth.desktop.kiro.dev/refreshToken'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401[0m
+[32m2026-01-21 12:42:22[0m | [33m[1mWARNING [0m | [36mmain[0m:[36mlifespan[0m:[36m385[0m - [33m[1mServer will start with hidden models only (fallback mode)[0m
+[32m2026-01-21 12:42:22[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m396[0m - [1mModel cache ready: 1 models total[0m
+[32m2026-01-21 12:42:22[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m403[0m - [1mModel resolver initialized[0m
+[32m2026-01-21 12:42:22[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication startup complete.[0m
+[32m2026-01-21 12:42:22[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mUvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)[0m
+[32m2026-01-21 12:43:18[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:60570 - "GET /health HTTP/1.1" 200[0m
+[32m2026-01-21 12:43:30[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mget_models[0m:[36m133[0m - [1mRequest to /v1/models[0m
+[32m2026-01-21 12:43:30[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:60605 - "GET /v1/models HTTP/1.1" 200[0m
+[32m2026-01-21 12:43:37[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m172[0m - [1mRequest to /v1/chat/completions (model=claude-3.7-sonnet, stream=False)[0m
+[32m2026-01-21 12:43:37[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_refresh_token_kiro_desktop[0m:[36m586[0m - [1mRefreshing Kiro token via Kiro Desktop Auth...[0m
+[32m2026-01-21 12:43:38[0m | [31m[1mERROR   [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m353[0m - [31m[1mInternal error: Client error '401 Unauthorized' for url 'https://prod.us-east-1.auth.desktop.kiro.dev/refreshToken'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401[0m
+[32m2026-01-21 12:43:38[0m | [31m[1mERROR   [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m355[0m - [31m[1mHTTP 500 - POST /v1/chat/completions - Client error '401 Unauthorized' for url 'https://prod.us-east-1.auth.desktop.kiro.dev/refreshToken'
+[0m
+[32m2026-01-21 12:43:38[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:60617 - "POST /v1/chat/completions HTTP/1.1" 500[0m
+[32m2026-01-21 12:49:13[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mShutting down[0m
+[32m2026-01-21 12:49:13[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application shutdown.[0m
+[32m2026-01-21 12:49:13[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m408[0m - [1mShutting down application...[0m
+[32m2026-01-21 12:49:13[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m411[0m - [1mShared HTTP client closed[0m
+[32m2026-01-21 12:49:13[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication shutdown complete.[0m
+[32m2026-01-21 12:49:13[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mFinished server process [84413][0m
+Wed Jan 21 12:49:16 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:49:16 +07 2026: kiro-gateway started (PID: 87943)
+[32m2026-01-21 12:49:16[0m | [1mINFO    [0m | [36m__main__[0m:[36m<module>[0m:[36m623[0m - [1mStarting Uvicorn server on 0.0.0.0:8000...[0m
+[32m2026-01-21 12:49:16[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mStarted server process [87943][0m
+[32m2026-01-21 12:49:16[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application startup.[0m
+[32m2026-01-21 12:49:16[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m316[0m - [1mStarting application... Creating state managers.[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m338[0m - [1mShared HTTP client created with connection pooling[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_load_credentials_from_file[0m:[36m371[0m - [1mCredentials loaded from ~/.cli-proxy-api/kiro-google-EHGA3GRVQMUK.json[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_detect_auth_type[0m:[36m194[0m - [1mDetected auth type: Kiro Desktop[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m356[0m - [1mLoading models from Kiro API...[0m
+[32m2026-01-21 12:49:17[0m | [33m[1mWARNING [0m | [36mmain[0m:[36mlifespan[0m:[36m384[0m - [33m[1mFailed to fetch models from Kiro API: Refresh token is not set[0m
+[32m2026-01-21 12:49:17[0m | [33m[1mWARNING [0m | [36mmain[0m:[36mlifespan[0m:[36m385[0m - [33m[1mServer will start with hidden models only (fallback mode)[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m396[0m - [1mModel cache ready: 1 models total[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m403[0m - [1mModel resolver initialized[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication startup complete.[0m
+[32m2026-01-21 12:49:17[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mUvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)[0m
+[32m2026-01-21 12:50:10[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mShutting down[0m
+[32m2026-01-21 12:50:11[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application shutdown.[0m
+[32m2026-01-21 12:50:11[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m408[0m - [1mShutting down application...[0m
+[32m2026-01-21 12:50:11[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m411[0m - [1mShared HTTP client closed[0m
+[32m2026-01-21 12:50:11[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication shutdown complete.[0m
+[32m2026-01-21 12:50:11[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mFinished server process [87943][0m
+Wed Jan 21 12:50:13 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:50:13 +07 2026: kiro-gateway started (PID: 88678)
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36m__main__[0m:[36m<module>[0m:[36m623[0m - [1mStarting Uvicorn server on 0.0.0.0:8000...[0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mStarted server process [88678][0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application startup.[0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m316[0m - [1mStarting application... Creating state managers.[0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m338[0m - [1mShared HTTP client created with connection pooling[0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_load_credentials_from_file[0m:[36m395[0m - [1mCredentials loaded from ~/.cli-proxy-api/kiro-google-EHGA3GRVQMUK.json[0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_detect_auth_type[0m:[36m198[0m - [1mDetected auth type: Kiro Desktop[0m
+[32m2026-01-21 12:50:14[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m356[0m - [1mLoading models from Kiro API...[0m
+[32m2026-01-21 12:50:15[0m | [1mINFO    [0m | [36mkiro.cache[0m:[36mupdate[0m:[36m76[0m - [1mUpdating model cache. Found 4 models.[0m
+[32m2026-01-21 12:50:15[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m396[0m - [1mModel cache ready: 5 models total[0m
+[32m2026-01-21 12:50:15[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m403[0m - [1mModel resolver initialized[0m
+[32m2026-01-21 12:50:15[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication startup complete.[0m
+[32m2026-01-21 12:50:15[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mUvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)[0m
+[32m2026-01-21 12:50:36[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mget_models[0m:[36m133[0m - [1mRequest to /v1/models[0m
+[32m2026-01-21 12:50:36[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:61609 - "GET /v1/models HTTP/1.1" 200[0m
+[32m2026-01-21 12:50:41[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m172[0m - [1mRequest to /v1/chat/completions (model=claude-sonnet-4.5, stream=False)[0m
+[32m2026-01-21 12:50:50[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m335[0m - [1mHTTP 200 - POST /v1/chat/completions (non-streaming) - completed[0m
+[32m2026-01-21 12:50:50[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:61617 - "POST /v1/chat/completions HTTP/1.1" 200[0m
+[32m2026-01-21 12:53:08[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=False)[0m
+[32m2026-01-21 12:53:12[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m317[0m - [1mHTTP 200 - POST /v1/messages (non-streaming) - completed[0m
+[32m2026-01-21 12:53:12[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62000 - "POST /v1/messages HTTP/1.1" 200[0m
+[32m2026-01-21 12:53:16[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-haiku-4.5, stream=False)[0m
+[32m2026-01-21 12:53:18[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m317[0m - [1mHTTP 200 - POST /v1/messages (non-streaming) - completed[0m
+[32m2026-01-21 12:53:18[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62014 - "POST /v1/messages HTTP/1.1" 200[0m
+[32m2026-01-21 12:53:23[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4, stream=False)[0m
+[32m2026-01-21 12:53:26[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m317[0m - [1mHTTP 200 - POST /v1/messages (non-streaming) - completed[0m
+[32m2026-01-21 12:53:26[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62038 - "POST /v1/messages HTTP/1.1" 200[0m
+[32m2026-01-21 12:53:49[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mShutting down[0m
+[32m2026-01-21 12:53:49[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application shutdown.[0m
+[32m2026-01-21 12:53:49[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m408[0m - [1mShutting down application...[0m
+[32m2026-01-21 12:53:49[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m411[0m - [1mShared HTTP client closed[0m
+[32m2026-01-21 12:53:49[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication shutdown complete.[0m
+[32m2026-01-21 12:53:49[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mFinished server process [88678][0m
+Wed Jan 21 12:53:52 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:53:52 +07 2026: kiro-gateway started (PID: 90295)
+[32m2026-01-21 12:53:53[0m | [34m[1mDEBUG   [0m | [36m__main__[0m:[36mresolve_server_config[0m:[36m567[0m - [34m[1mHost: 0.0.0.0 (from default)[0m
+[32m2026-01-21 12:53:53[0m | [34m[1mDEBUG   [0m | [36m__main__[0m:[36mresolve_server_config[0m:[36m568[0m - [34m[1mPort: 8000 (from default)[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36m__main__[0m:[36m<module>[0m:[36m623[0m - [1mStarting Uvicorn server on 0.0.0.0:8000...[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mStarted server process [90295][0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application startup.[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m316[0m - [1mStarting application... Creating state managers.[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m338[0m - [1mShared HTTP client created with connection pooling[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_load_credentials_from_file[0m:[36m395[0m - [1mCredentials loaded from ~/.cli-proxy-api/kiro-google-EHGA3GRVQMUK.json[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_detect_auth_type[0m:[36m198[0m - [1mDetected auth type: Kiro Desktop[0m
+[32m2026-01-21 12:53:53[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m356[0m - [1mLoading models from Kiro API...[0m
+[32m2026-01-21 12:53:54[0m | [1mINFO    [0m | [36mkiro.cache[0m:[36mupdate[0m:[36m76[0m - [1mUpdating model cache. Found 4 models.[0m
+[32m2026-01-21 12:53:54[0m | [34m[1mDEBUG   [0m | [36mmain[0m:[36mlifespan[0m:[36m379[0m - [34m[1mLoaded 4 models from Kiro API: ['auto', 'claude-sonnet-4.5', 'claude-sonnet-4', 'claude-haiku-4.5'][0m
+[32m2026-01-21 12:53:54[0m | [34m[1mDEBUG   [0m | [36mkiro.cache[0m:[36madd_hidden_model[0m:[36m127[0m - [34m[1mAdded hidden model: claude-3.7-sonnet → CLAUDE_3_7_SONNET_20250219_V1_0[0m
+[32m2026-01-21 12:53:54[0m | [34m[1mDEBUG   [0m | [36mmain[0m:[36mlifespan[0m:[36m392[0m - [34m[1mAdded 1 hidden models to cache[0m
+[32m2026-01-21 12:53:54[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m396[0m - [1mModel cache ready: 5 models total[0m
+[32m2026-01-21 12:53:54[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m403[0m - [1mModel resolver initialized[0m
+[32m2026-01-21 12:53:54[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication startup complete.[0m
+[32m2026-01-21 12:53:54[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mUvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)[0m
+[32m2026-01-21 12:55:43[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mShutting down[0m
+[32m2026-01-21 12:55:43[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application shutdown.[0m
+[32m2026-01-21 12:55:43[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m408[0m - [1mShutting down application...[0m
+[32m2026-01-21 12:55:43[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m411[0m - [1mShared HTTP client closed[0m
+[32m2026-01-21 12:55:43[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication shutdown complete.[0m
+[32m2026-01-21 12:55:43[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mFinished server process [90295][0m
+Wed Jan 21 12:55:46 +07 2026: Starting kiro-gateway...
+Wed Jan 21 12:55:46 +07 2026: kiro-gateway started (PID: 91214)
+[32m2026-01-21 12:55:46[0m | [1mINFO    [0m | [36m__main__[0m:[36m<module>[0m:[36m623[0m - [1mStarting Uvicorn server on 0.0.0.0:8000...[0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mStarted server process [91214][0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mWaiting for application startup.[0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m316[0m - [1mStarting application... Creating state managers.[0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m338[0m - [1mShared HTTP client created with connection pooling[0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_load_credentials_from_file[0m:[36m395[0m - [1mCredentials loaded from ~/.cli-proxy-api/kiro-google-EHGA3GRVQMUK.json[0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mkiro.auth[0m:[36m_detect_auth_type[0m:[36m198[0m - [1mDetected auth type: Kiro Desktop[0m
+[32m2026-01-21 12:55:47[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m356[0m - [1mLoading models from Kiro API...[0m
+[32m2026-01-21 12:55:48[0m | [1mINFO    [0m | [36mkiro.cache[0m:[36mupdate[0m:[36m76[0m - [1mUpdating model cache. Found 4 models.[0m
+[32m2026-01-21 12:55:48[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m396[0m - [1mModel cache ready: 5 models total[0m
+[32m2026-01-21 12:55:48[0m | [1mINFO    [0m | [36mmain[0m:[36mlifespan[0m:[36m403[0m - [1mModel resolver initialized[0m
+[32m2026-01-21 12:55:48[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mApplication startup complete.[0m
+[32m2026-01-21 12:55:48[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1mUvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)[0m
+[32m2026-01-21 12:55:54[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62404 - "GET /health HTTP/1.1" 200[0m
+[32m2026-01-21 12:55:57[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mget_models[0m:[36m133[0m - [1mRequest to /v1/models[0m
+[32m2026-01-21 12:55:57[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62418 - "GET /v1/models HTTP/1.1" 200[0m
+[32m2026-01-21 12:56:02[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m172[0m - [1mRequest to /v1/chat/completions (model=claude-sonnet-4.5, stream=False)[0m
+[32m2026-01-21 12:56:05[0m | [1mINFO    [0m | [36mkiro.routes_openai[0m:[36mchat_completions[0m:[36m335[0m - [1mHTTP 200 - POST /v1/chat/completions (non-streaming) - completed[0m
+[32m2026-01-21 12:56:05[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62437 - "POST /v1/chat/completions HTTP/1.1" 200[0m
+[32m2026-01-21 12:56:09[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-haiku-4.5, stream=False)[0m
+[32m2026-01-21 12:56:12[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m317[0m - [1mHTTP 200 - POST /v1/messages (non-streaming) - completed[0m
+[32m2026-01-21 12:56:12[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62457 - "POST /v1/messages HTTP/1.1" 200[0m
+[32m2026-01-21 12:56:30[0m | [33m[1mWARNING [0m | [36mkiro.routes_openai[0m:[36mverify_api_key[0m:[36m81[0m - [33m[1mAccess attempt with invalid API key.[0m
+[32m2026-01-21 12:56:30[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62502 - "GET /v1/models HTTP/1.1" 401[0m
+[32m2026-01-21 12:56:42[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:56:46[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62520 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:56:50[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:57:02[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:57:06[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62561 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:57:09[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:57:10[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:57:14[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62561 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:57:20[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:57:20[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:57:24[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62561 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:57:30[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:57:30[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:57:34[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62561 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:57:38[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:57:43[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:57:46[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62652 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:57:50[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:57:50[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:57:54[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62652 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:58:00[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:58:02[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:58:05[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62693 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:58:09[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:58:10[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:58:14[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62693 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:58:18[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:58:19[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:58:22[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62693 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:58:30[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m
+[32m2026-01-21 12:58:31[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mmessages[0m:[36m144[0m - [1mRequest to /v1/messages (model=claude-sonnet-4.5, stream=True)[0m
+[32m2026-01-21 12:58:34[0m | [1mINFO    [0m | [36mlogging[0m:[36mcallHandlers[0m:[36m1762[0m - [1m127.0.0.1:62693 - "POST /v1/messages?beta=true HTTP/1.1" 200[0m
+[32m2026-01-21 12:58:43[0m | [1mINFO    [0m | [36mkiro.routes_anthropic[0m:[36mstream_wrapper[0m:[36m288[0m - [1mHTTP 200 - POST /v1/messages (streaming) - completed[0m

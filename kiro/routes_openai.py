@@ -34,21 +34,25 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.security import APIKeyHeader
 from loguru import logger
 
-from kiro.config import (
-    PROXY_API_KEY,
-    APP_VERSION,
-)
-from kiro.models_openai import (
-    OpenAIModel,
-    ModelList,
-    ChatCompletionRequest,
-)
-from kiro.auth import KiroAuthManager, AuthType
+from kiro.auth import AuthType, KiroAuthManager
 from kiro.cache import ModelInfoCache
-from kiro.model_resolver import ModelResolver
+from kiro.config import (
+    APP_VERSION,
+    PROXY_API_KEY,
+)
 from kiro.converters_openai import build_kiro_payload
-from kiro.streaming_openai import stream_kiro_to_openai, collect_stream_response, stream_with_first_token_retry
 from kiro.http_client import KiroHttpClient
+from kiro.model_resolver import ModelResolver
+from kiro.models_openai import (
+    ChatCompletionRequest,
+    ModelList,
+    OpenAIModel,
+)
+from kiro.streaming_openai import (
+    collect_stream_response,
+    stream_kiro_to_openai,
+    stream_with_first_token_retry,
+)
 from kiro.utils import generate_conversation_id
 
 # Import debug_logger
@@ -65,15 +69,15 @@ api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 async def verify_api_key(auth_header: str = Security(api_key_header)) -> bool:
     """
     Verify API key in Authorization header.
-    
+
     Expects format: "Bearer {PROXY_API_KEY}"
-    
+
     Args:
         auth_header: Authorization header value
-    
+
     Returns:
         True if key is valid
-    
+
     Raises:
         HTTPException: 401 if key is invalid or missing
     """
@@ -91,14 +95,14 @@ router = APIRouter()
 async def root():
     """
     Health check endpoint.
-    
+
     Returns:
         Status and application version
     """
     return {
         "status": "ok",
         "message": "Kiro Gateway is running",
-        "version": APP_VERSION
+        "version": APP_VERSION,
     }
 
 
@@ -106,47 +110,70 @@ async def root():
 async def health():
     """
     Detailed health check.
-    
+
     Returns:
         Status, timestamp and version
     """
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "version": APP_VERSION
+        "version": APP_VERSION,
     }
 
-@router.get("/v1/models", response_model=ModelList, dependencies=[Depends(verify_api_key)])
+
+@router.get("/v1/accounts/stats")
+async def get_account_stats(request: Request) -> dict:
+    """
+    Get statistics about the account pool (multi-account mode only).
+
+    Returns account pool information including:
+    - Total accounts
+    - Healthy vs unhealthy accounts
+    - Request counts per account
+    - Load balancing strategy
+
+    Returns 404 if single-account mode is active.
+    """
+    if not request.app.state.multi_account_mode:
+        raise HTTPException(
+            status_code=404,
+            detail="Account pool stats not available in single-account mode",
+        )
+
+    return request.app.state.account_pool.get_stats()
+
+
+@router.get(
+    "/v1/models", response_model=ModelList, dependencies=[Depends(verify_api_key)]
+)
 async def get_models(request: Request):
     """
     Return list of available models.
-    
+
     Models are loaded at startup (blocking) and cached.
     This endpoint returns the cached list.
-    
+
     Args:
         request: FastAPI Request for accessing app.state
-    
+
     Returns:
         ModelList with available models in consistent format (with dots)
     """
     logger.info("Request to /v1/models")
-    
+
     model_resolver: ModelResolver = request.app.state.model_resolver
-    
+
     # Get all available models from resolver (cache + hidden models)
     available_model_ids = model_resolver.get_available_models()
-    
+
     # Build OpenAI-compatible model list
     openai_models = [
         OpenAIModel(
-            id=model_id,
-            owned_by="anthropic",
-            description="Claude model via Kiro API"
+            id=model_id, owned_by="anthropic", description="Claude model via Kiro API"
         )
         for model_id in available_model_ids
     ]
-    
+
     return ModelList(data=openai_models)
 
 
@@ -154,56 +181,63 @@ async def get_models(request: Request):
 async def chat_completions(request: Request, request_data: ChatCompletionRequest):
     """
     Chat completions endpoint - compatible with OpenAI API.
-    
+
     Accepts requests in OpenAI format and translates them to Kiro API.
     Supports streaming and non-streaming modes.
-    
+
     Args:
         request: FastAPI Request for accessing app.state
         request_data: Request in OpenAI ChatCompletionRequest format
-    
+
     Returns:
         StreamingResponse for streaming mode
         JSONResponse for non-streaming mode
-    
+
     Raises:
         HTTPException: On validation or API errors
     """
-    logger.info(f"Request to /v1/chat/completions (model={request_data.model}, stream={request_data.stream})")
-    
-    auth_manager: KiroAuthManager = request.app.state.auth_manager
+    logger.info(
+        f"Request to /v1/chat/completions (model={request_data.model}, stream={request_data.stream})"
+    )
+
+    # Get auth manager (from pool if multi-account mode)
+    if request.app.state.multi_account_mode:
+        auth_manager = await request.app.state.account_pool.get_next_account()
+    else:
+        auth_manager = request.app.state.auth_manager
+
     model_cache: ModelInfoCache = request.app.state.model_cache
-    
+
     # Note: prepare_new_request() and log_request_body() are now called by DebugLoggerMiddleware
     # This ensures debug logging works even for requests that fail Pydantic validation (422 errors)
-    
+
     # Generate conversation ID
     conversation_id = generate_conversation_id()
-    
+
     # Build payload for Kiro
     # profileArn is only needed for Kiro Desktop auth
     # AWS SSO OIDC (Builder ID) users don't need profileArn and it causes 403 if sent
     profile_arn_for_payload = ""
     if auth_manager.auth_type == AuthType.KIRO_DESKTOP and auth_manager.profile_arn:
         profile_arn_for_payload = auth_manager.profile_arn
-    
+
     try:
         kiro_payload = build_kiro_payload(
-            request_data,
-            conversation_id,
-            profile_arn_for_payload
+            request_data, conversation_id, profile_arn_for_payload
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
     # Log Kiro payload
     try:
-        kiro_request_body = json.dumps(kiro_payload, ensure_ascii=False, indent=2).encode('utf-8')
+        kiro_request_body = json.dumps(
+            kiro_payload, ensure_ascii=False, indent=2
+        ).encode("utf-8")
         if debug_logger:
             debug_logger.log_kiro_request_body(kiro_request_body)
     except Exception as e:
         logger.warning(f"Failed to log Kiro request: {e}")
-    
+
     # Create HTTP client with retry logic
     # Use shared HTTP client from app.state for connection pooling
     shared_client = request.app.state.http_client
@@ -214,22 +248,19 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
         # Important: we wait for Kiro response BEFORE returning StreamingResponse,
         # so that 200 OK means Kiro accepted the request and started responding
         response = await http_client.request_with_retry(
-            "POST",
-            url,
-            kiro_payload,
-            stream=True
+            "POST", url, kiro_payload, stream=True
         )
-        
+
         if response.status_code != 200:
             try:
                 error_content = await response.aread()
             except Exception:
                 error_content = b"Unknown error"
-            
+
             await http_client.close()
-            error_text = error_content.decode('utf-8', errors='replace')
+            error_text = error_content.decode("utf-8", errors="replace")
             logger.error(f"Error from Kiro API: {response.status_code} - {error_text}")
-            
+
             # Try to parse JSON response from Kiro to extract error message
             error_message = error_text
             try:
@@ -237,19 +268,21 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
                 if "message" in error_json:
                     error_message = error_json["message"]
                     if "reason" in error_json:
-                        error_message = f"{error_message} (reason: {error_json['reason']})"
+                        error_message = (
+                            f"{error_message} (reason: {error_json['reason']})"
+                        )
             except (json.JSONDecodeError, KeyError):
                 pass
-            
+
             # Log access log for error (before flush, so it gets into app_logs)
             logger.warning(
                 f"HTTP {response.status_code} - POST /v1/chat/completions - {error_message[:100]}"
             )
-            
+
             # Flush debug logs on error ("errors" mode)
             if debug_logger:
                 debug_logger.flush_on_error(response.status_code, error_message)
-            
+
             # Return error in OpenAI API format
             return JSONResponse(
                 status_code=response.status_code,
@@ -257,16 +290,20 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
                     "error": {
                         "message": error_message,
                         "type": "kiro_api_error",
-                        "code": response.status_code
+                        "code": response.status_code,
                     }
-                }
+                },
             )
-        
+
         # Prepare data for fallback token counting
         # Convert Pydantic models to dicts for tokenizer
         messages_for_tokenizer = [msg.model_dump() for msg in request_data.messages]
-        tools_for_tokenizer = [tool.model_dump() for tool in request_data.tools] if request_data.tools else None
-        
+        tools_for_tokenizer = (
+            [tool.model_dump() for tool in request_data.tools]
+            if request_data.tools
+            else None
+        )
+
         if request_data.stream:
             # Streaming mode
             async def stream_wrapper():
@@ -280,13 +317,15 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
                         model_cache,
                         auth_manager,
                         request_messages=messages_for_tokenizer,
-                        request_tools=tools_for_tokenizer
+                        request_tools=tools_for_tokenizer,
                     ):
                         yield chunk
                 except GeneratorExit:
                     # Client disconnected - this is normal
                     client_disconnected = True
-                    logger.debug("Client disconnected during streaming (GeneratorExit in routes)")
+                    logger.debug(
+                        "Client disconnected during streaming (GeneratorExit in routes)"
+                    )
                 except Exception as e:
                     streaming_error = e
                     # Try to send [DONE] to client before finishing
@@ -301,23 +340,32 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
                     # Log access log for streaming (success or error)
                     if streaming_error:
                         error_type = type(streaming_error).__name__
-                        error_msg = str(streaming_error) if str(streaming_error) else "(empty message)"
-                        logger.error(f"HTTP 500 - POST /v1/chat/completions (streaming) - [{error_type}] {error_msg[:100]}")
+                        error_msg = (
+                            str(streaming_error)
+                            if str(streaming_error)
+                            else "(empty message)"
+                        )
+                        logger.error(
+                            f"HTTP 500 - POST /v1/chat/completions (streaming) - [{error_type}] {error_msg[:100]}"
+                        )
                     elif client_disconnected:
-                        logger.info(f"HTTP 200 - POST /v1/chat/completions (streaming) - client disconnected")
+                        logger.info(
+                            f"HTTP 200 - POST /v1/chat/completions (streaming) - client disconnected"
+                        )
                     else:
-                        logger.info(f"HTTP 200 - POST /v1/chat/completions (streaming) - completed")
+                        logger.info(
+                            f"HTTP 200 - POST /v1/chat/completions (streaming) - completed"
+                        )
                     # Write debug logs AFTER streaming completes
                     if debug_logger:
                         if streaming_error:
                             debug_logger.flush_on_error(500, str(streaming_error))
                         else:
                             debug_logger.discard_buffers()
-            
+
             return StreamingResponse(stream_wrapper(), media_type="text/event-stream")
-        
+
         else:
-            
             # Non-streaming mode - collect entire response
             openai_response = await collect_stream_response(
                 http_client.client,
@@ -326,20 +374,22 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
                 model_cache,
                 auth_manager,
                 request_messages=messages_for_tokenizer,
-                request_tools=tools_for_tokenizer
+                request_tools=tools_for_tokenizer,
             )
-            
+
             await http_client.close()
-            
+
             # Log access log for non-streaming success
-            logger.info(f"HTTP 200 - POST /v1/chat/completions (non-streaming) - completed")
-            
+            logger.info(
+                f"HTTP 200 - POST /v1/chat/completions (non-streaming) - completed"
+            )
+
             # Write debug logs after non-streaming request completes
             if debug_logger:
                 debug_logger.discard_buffers()
-            
+
             return JSONResponse(content=openai_response)
-    
+
     except HTTPException as e:
         await http_client.close()
         # Log access log for HTTP error
