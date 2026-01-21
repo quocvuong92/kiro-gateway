@@ -299,6 +299,134 @@ Leave `VPN_PROXY_URL` empty (default) if you don't need proxy support.
 
 ---
 
+## ⚖️ Multi-Account Load Balancing
+
+**Scale beyond single-account limits by distributing requests across multiple Kiro accounts.**
+
+The gateway supports automatic load balancing across multiple credential files. This helps:
+- Distribute load across multiple accounts
+- Avoid rate limits on a single account
+- Provide redundancy if one account has issues
+- Maximize throughput for high-volume usage
+
+### Configuration
+
+1. **Create a directory** for your credential files:
+
+```bash
+mkdir -p ~/.cli-proxy-api
+```
+
+2. **Add multiple credential files** with the `kiro-*.json` pattern:
+
+```bash
+~/.cli-proxy-api/
+├── kiro-personal.json
+├── kiro-work.json
+└── kiro-backup.json
+```
+
+Each file should follow the same format as single-account mode (see [Configuration](#%EF%B8%8F-configuration)).
+
+3. **Configure the directory** in your `.env` file:
+
+```env
+# Enable multi-account mode
+KIRO_ACCOUNTS_DIR="~/.cli-proxy-api"
+
+# Optional: Choose load balancing strategy (default: round_robin)
+KIRO_LOAD_BALANCE_STRATEGY="round_robin"
+
+# Optional: Skip accounts expiring soon (default: 300 seconds = 5 minutes)
+KIRO_SKIP_EXPIRING_THRESHOLD="300"
+```
+
+4. **Start the gateway** — it will automatically discover all `kiro-*.json` files.
+
+### Load Balancing Strategies
+
+| Strategy | Description | Use Case |
+|----------|-------------|----------|
+| `round_robin` | Cycle through accounts evenly (default) | Balanced distribution |
+| `random` | Pick random account for each request | Simple randomization |
+| `least_used` | Use account with fewest requests | Balance load by usage |
+
+### Monitoring
+
+When multi-account mode is enabled, a new stats endpoint is available:
+
+```bash
+curl http://localhost:8000/v1/stats
+```
+
+**Example response:**
+
+```json
+{
+  "mode": "multi_account",
+  "strategy": "round_robin",
+  "total_accounts": 3,
+  "healthy_accounts": 2,
+  "accounts": [
+    {
+      "name": "kiro-personal.json",
+      "status": "healthy",
+      "requests": 42,
+      "expires_at": "2026-01-22T15:30:00Z",
+      "expires_in_seconds": 3600
+    },
+    {
+      "name": "kiro-work.json",
+      "status": "healthy",
+      "requests": 38,
+      "expires_at": "2026-01-22T16:00:00Z",
+      "expires_in_seconds": 5400
+    },
+    {
+      "name": "kiro-backup.json",
+      "status": "expiring_soon",
+      "requests": 0,
+      "expires_at": "2026-01-21T12:00:00Z",
+      "expires_in_seconds": 120
+    }
+  ]
+}
+```
+
+### Account Status
+
+| Status | Description |
+|--------|-------------|
+| `healthy` | Account is active and ready |
+| `expiring_soon` | Account expires within threshold (skipped for new requests) |
+| `expired` | Account token has expired (skipped) |
+| `error` | Account has configuration errors (skipped) |
+
+### How It Works
+
+1. **Discovery**: On startup, the gateway scans `KIRO_ACCOUNTS_DIR` for all `kiro-*.json` files
+2. **Selection**: For each request, an account is selected based on the configured strategy
+3. **Filtering**: Expired or expiring accounts are automatically skipped
+4. **Refresh**: Each account's token is refreshed independently before expiration
+5. **Fallback**: If all accounts are unavailable, the request fails with an error
+
+### Single-Account Mode
+
+If `KIRO_ACCOUNTS_DIR` is not set, the gateway operates in single-account mode using `KIRO_CREDS_FILE` (default behavior).
+
+The `/v1/stats` endpoint returns 404 in single-account mode.
+
+### Credential File Format
+
+Each `kiro-*.json` file supports all credential types:
+- **Kiro IDE** credentials (with `accessToken`, `refreshToken`, `profileArn`)
+- **AWS SSO** credentials (with `clientId`, `clientSecret`)
+- **kiro-cli** credentials (same as AWS SSO)
+
+See [Configuration](#%EF%B8%8F-configuration) for detailed credential file formats.
+
+---
+
 ## 📡 API Reference
 
 ### Endpoints
@@ -310,6 +438,7 @@ Leave `VPN_PROXY_URL` empty (default) if you don't need proxy support.
 | `/v1/models` | GET | List available models |
 | `/v1/chat/completions` | POST | OpenAI Chat Completions API |
 | `/v1/messages` | POST | Anthropic Messages API |
+| `/v1/stats` | GET | Multi-account stats (only in multi-account mode) |
 
 ---
 
