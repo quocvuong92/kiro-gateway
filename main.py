@@ -243,6 +243,7 @@ def validate_configuration() -> None:
         has_refresh_token = bool(REFRESH_TOKEN)
         has_creds_file = bool(KIRO_CREDS_FILE)
         has_cli_db = bool(KIRO_CLI_DB_FILE)
+        has_accounts_dir = bool(KIRO_ACCOUNTS_DIR)
 
         # Check if creds file actually exists
         if KIRO_CREDS_FILE:
@@ -258,7 +259,24 @@ def validate_configuration() -> None:
                 has_cli_db = False
                 logger.warning(f"KIRO_CLI_DB_FILE not found: {KIRO_CLI_DB_FILE}")
 
-        if not has_refresh_token and not has_creds_file and not has_cli_db:
+        # Check if accounts directory actually exists
+        if KIRO_ACCOUNTS_DIR:
+            accounts_path = Path(KIRO_ACCOUNTS_DIR).expanduser()
+            if not accounts_path.exists():
+                has_accounts_dir = False
+                logger.warning(f"KIRO_ACCOUNTS_DIR not found: {KIRO_ACCOUNTS_DIR}")
+            elif not accounts_path.is_dir():
+                has_accounts_dir = False
+                logger.warning(
+                    f"KIRO_ACCOUNTS_DIR is not a directory: {KIRO_ACCOUNTS_DIR}"
+                )
+
+        if (
+            not has_refresh_token
+            and not has_creds_file
+            and not has_cli_db
+            and not has_accounts_dir
+        ):
             errors.append(
                 "No Kiro credentials configured!\n"
                 "\n"
@@ -270,10 +288,13 @@ def validate_configuration() -> None:
                 "   Option 1 (Recommended): JSON credentials file\n"
                 '      KIRO_CREDS_FILE="path/to/your/kiro-credentials.json"\n'
                 "\n"
-                "   Option 2: Refresh token\n"
+                "   Option 2: Multi-account directory (load balancing)\n"
+                '      KIRO_ACCOUNTS_DIR="~/.cli-proxy-api"\n'
+                "\n"
+                "   Option 3: Refresh token\n"
                 '      REFRESH_TOKEN="your_refresh_token_here"\n'
                 "\n"
-                "   Option 3: kiro-cli SQLite database (AWS SSO)\n"
+                "   Option 4: kiro-cli SQLite database (AWS SSO)\n"
                 '      KIRO_CLI_DB_FILE="~/.local/share/kiro-cli/data.sqlite3"\n'
                 "\n"
                 "   See README.md for how to obtain credentials."
